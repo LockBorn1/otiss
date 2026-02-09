@@ -28,7 +28,7 @@ export default function Login() {
       }}
     >
       <div style={{ background: "rgba(0,0,0,.7)", padding: 30, borderRadius: 10 }}>
-        <h2>Patrol Terminal</h2>
+        <h2>OTIS - Login</h2>
 
         <input placeholder="Username" onChange={e => setU(e.target.value)} />
         <br /><br />
