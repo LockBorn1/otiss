@@ -1,8 +1,12 @@
-@import "leaflet/dist/leaflet.css";
-
-body {
+html, body {
   margin: 0;
-  font-family: system-ui;
+  padding: 0;
   background: #0b1220;
   color: white;
+  font-family: system-ui, Arial, sans-serif;
+  height: 100%;
+}
+
+button {
+  cursor: pointer;
 }
