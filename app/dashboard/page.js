@@ -18,7 +18,7 @@ export default function Dashboard() {
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={{ background: "#222", padding: 10 }}>
-        Unit 0722 — Athens RP Terminal
+        Unit 0722 — Athens OSHP
         <button style={{ float: "right" }} onClick={() => window.location.href="/"}>
           Logout
         </button>
