@@ -1,144 +1,151 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Map from "./map";
 
 export default function Dashboard() {
 
-  // Lookup system
-  const [name, setName] = useState("");
-  const [result, setResult] = useState("");
+  // ---- STATE ----
+  const [night, setNight] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
-  function lookup() {
-    if (name.toLowerCase() === "john carter") {
-      setResult("VALID OH LICENSE — NO WARRANTS");
-    } else {
-      setResult("NO RECORD FOUND");
-    }
+  const [cases, setCases] = useState([]);
+  const [citations, setCitations] = useState([]);
+  const [dispatch, setDispatch] = useState([]);
+  const [warrants] = useState(["John Doe — Active Warrant"]);
+  const [plates] = useState({ "ABC123": "Clear", "HOT911": "Stolen Vehicle" });
+
+  const [officers] = useState([
+    "Milner 0722",
+    "Walker 0911",
+    "Davis 1023"
+  ]);
+
+  // ---- LOAD STORAGE ----
+  useEffect(() => {
+    setCases(JSON.parse(localStorage.getItem("cases") || "[]"));
+    setCitations(JSON.parse(localStorage.getItem("citations") || "[]"));
+  }, []);
+
+  function save(key, data) {
+    localStorage.setItem(key, JSON.stringify(data));
   }
 
-  // Case system
-  const [caseId, setCaseId] = useState("LC-" + Math.floor(Math.random()*100000));
-  const [incidentType, setIncidentType] = useState("");
-  const [county, setCounty] = useState("");
-  const [location, setLocation] = useState("");
-  const [officer, setOfficer] = useState("");
-  const [status, setStatus] = useState("");
-
-  function addCase() {
-    setCaseId("LC-" + Math.floor(Math.random()*100000));
-    setIncidentType("");
-    setCounty("");
-    setLocation("");
-    setOfficer("");
-    setStatus("New case created");
+  // ---- CASE ----
+  function newCase() {
+    const c = { id: "LC-" + Date.now(), officer: "Milner 0722" };
+    const updated = [...cases, c];
+    setCases(updated);
+    save("cases", updated);
   }
 
-  function saveCase() {
-    setStatus("Case saved");
+  // ---- CITATION ----
+  function addCitation() {
+    const c = "Citation #" + (citations.length + 1);
+    const updated = [...citations, c];
+    setCitations(updated);
+    save("citations", updated);
   }
 
-  function deleteCase() {
-    setStatus("Case deleted");
-    addCase();
+  // ---- DISPATCH ----
+  function addDispatch() {
+    setDispatch([...dispatch, "Traffic Stop — Main St"]);
   }
 
-  function validateCase() {
-    if (!incidentType || !county) {
-      setStatus("Missing required fields");
-      return;
-    }
-    setStatus("Case validated");
+  // ---- PLATE SCAN ----
+  function scanPlate() {
+    const plate = prompt("Enter plate:");
+    alert(plates[plate] || "No record");
+  }
+
+  // ---- SIREN ----
+  function siren() {
+    const audio = new Audio("https://actions.google.com/sounds/v1/alarms/siren.ogg");
+    audio.play();
+  }
+
+  // ---- EXPORT ----
+  function exportReport() {
+    const blob = new Blob([JSON.stringify(cases, null, 2)]);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "cases.json";
+    a.click();
   }
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+    <div style={{
+      height: "100vh",
+      background: night ? "#000" : "#2a2a2a",
+      color: night ? "#0f0" : "white",
+      display: "flex",
+      flexDirection: "column"
+    }}>
 
-      {/* Top bar */}
+      {/* TOP BAR */}
       <div style={{ background: "#222", padding: 10 }}>
-        Unit 0722 — Athens OSHP
-        <button style={{ float: "right" }} onClick={() => window.location.href="/"}>
-          Logout
-        </button>
+        Athens RP MDT
+
+        <button onClick={() => setNight(!night)}>Night Mode</button>
+        <button onClick={siren}>Siren</button>
+
+        <span
+          style={{ float: "right", cursor: "pointer" }}
+          onClick={() => setProfileOpen(!profileOpen)}
+        >
+          👤
+        </span>
+
+        {profileOpen && (
+          <div style={{
+            position: "absolute",
+            right: 10,
+            top: 40,
+            background: "#333",
+            padding: 10
+          }}>
+            Trooper Milner 0722
+            <br />
+            <button onClick={() => window.location.href="/"}>
+              Logout
+            </button>
+          </div>
+        )}
       </div>
 
       <div style={{ display: "flex", flex: 1 }}>
 
-        {/* Sidebar */}
-        <div style={{ width: 200, background: "#1c1c1c", padding: 10 }}>
-          <h4>Admin</h4>
-          <ul style={{ listStyle: "none", padding: 0 }}>
-            <li>Offense</li>
-            <li>Summary</li>
-            <li>Suspect</li>
-            <li>Victim</li>
-            <li>Vehicle</li>
-            <li>Officer Notes</li>
-          </ul>
+        {/* SIDEBAR */}
+        <div style={{ width: 220, background: "#1c1c1c", padding: 10 }}>
+          <h4>MDT Menu</h4>
+
+          <button onClick={newCase}>New Case</button>
+          <button onClick={addCitation}>Citation</button>
+          <button onClick={addDispatch}>Dispatch</button>
+          <button onClick={scanPlate}>Plate Scan</button>
+          <button onClick={exportReport}>Export</button>
+
+          <h4>Officers</h4>
+          {officers.map(o => <div key={o}>{o}</div>)}
         </div>
 
-        {/* Main panel */}
-        <div style={{ flex: 1, padding: 15, background: "#2a2a2a", display: "flex", gap: 15 }}>
+        {/* MAIN */}
+        <div style={{ flex: 1, padding: 15, display: "flex", gap: 15 }}>
 
-          {/* Left column: lookup + case editor */}
           <div style={{ width: 400 }}>
+            <h3>Cases</h3>
+            {cases.map(c => <div key={c.id}>{c.id}</div>)}
 
-            {/* Lookup */}
-            <div style={{ background: "#111", padding: 10, marginBottom: 10 }}>
-              <h3>Person Lookup</h3>
-              <input placeholder="Enter name" onChange={e => setName(e.target.value)} />
-              <button onClick={lookup}>Search</button>
-              <p>{result}</p>
-            </div>
+            <h3>Citations</h3>
+            {citations.map((c,i) => <div key={i}>{c}</div>)}
 
-            {/* Case buttons */}
-            <div style={{ marginBottom: 10 }}>
-              <button onClick={addCase}>Add</button>
-              <button onClick={saveCase}>Save</button>
-              <button onClick={deleteCase}>Delete</button>
-              <button onClick={validateCase}>Validate</button>
-            </div>
+            <h3>Dispatch CAD</h3>
+            {dispatch.map((d,i) => <div key={i}>{d}</div>)}
 
-            <h3>Local Case Editor</h3>
-            <p><b>Case ID:</b> {caseId}</p>
-
-            {/* Case form */}
-            <div style={{ background: "#ddd", padding: 10, color: "black" }}>
-
-              <label>Incident Type</label><br />
-              <input
-                style={{ background: "yellow" }}
-                value={incidentType}
-                onChange={e => setIncidentType(e.target.value)}
-              /><br /><br />
-
-              <label>County</label><br />
-              <input
-                style={{ background: "yellow" }}
-                value={county}
-                onChange={e => setCounty(e.target.value)}
-              /><br /><br />
-
-              <label>Location</label><br />
-              <input
-                style={{ background: "yellow" }}
-                value={location}
-                onChange={e => setLocation(e.target.value)}
-              /><br /><br />
-
-              <label>Reporting Officer</label><br />
-              <input
-                style={{ background: "yellow" }}
-                value={officer}
-                onChange={e => setOfficer(e.target.value)}
-              />
-            </div>
-
-            <p>Status: {status}</p>
-
+            <h3>Warrants</h3>
+            {warrants.map((w,i) => <div key={i}>{w}</div>)}
           </div>
 
-          {/* Map column */}
           <div style={{ flex: 1 }}>
             <Map />
           </div>
