@@ -1,7 +1,7 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Patrol Terminal RP",
+  title: "Ohio Trooper Information System",
   description: "Roleplay patrol computer"
 };
 
