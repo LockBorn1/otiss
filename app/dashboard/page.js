@@ -1,9 +1,7 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useState } from "react";
-
-const Map = dynamic(() => import("./map"), { ssr: false });
+import Map from "./map";
 
 export default function Dashboard() {
   const [name, setName] = useState("");
@@ -30,10 +28,7 @@ export default function Dashboard() {
         <div style={{ width: 350, padding: 15, background: "#111" }}>
           <h3>Person Lookup</h3>
 
-          <input
-            placeholder="Enter name"
-            onChange={e => setName(e.target.value)}
-          />
+          <input placeholder="Enter name" onChange={e => setName(e.target.value)} />
           <button onClick={lookup}>Search</button>
 
           <p>{result}</p>
