@@ -1,93 +1,40 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Map from "./map";
 
 export default function Dashboard() {
 
-  // ---- STATE ----
-  const [night, setNight] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [treeOpen, setTreeOpen] = useState({
+    admin: true,
+    suspects: true,
+    vehicles: false
+  });
 
-  const [cases, setCases] = useState([]);
-  const [citations, setCitations] = useState([]);
-  const [dispatch, setDispatch] = useState([]);
-  const [warrants] = useState(["John Doe — Active Warrant"]);
-  const [plates] = useState({ "ABC123": "Clear", "HOT911": "Stolen Vehicle" });
+  const fakeAddresses = [
+    "12 Court St, Athens OH",
+    "441 Richland Ave, Athens OH",
+    "90 N Congress St, Athens OH",
+    "22 E Union St, Athens OH"
+  ];
 
-  const [officers] = useState([
-    "Milner 0722",
-    "Walker 0911",
-    "Davis 1023"
-  ]);
+  const suspect = {
+    name: "John Doe",
+    warrant: "ACTIVE WARRANT",
+    address: fakeAddresses[Math.floor(Math.random()*fakeAddresses.length)]
+  };
 
-  // ---- LOAD STORAGE ----
-  useEffect(() => {
-    setCases(JSON.parse(localStorage.getItem("cases") || "[]"));
-    setCitations(JSON.parse(localStorage.getItem("citations") || "[]"));
-  }, []);
-
-  function save(key, data) {
-    localStorage.setItem(key, JSON.stringify(data));
-  }
-
-  // ---- CASE ----
-  function newCase() {
-    const c = { id: "LC-" + Date.now(), officer: "Milner 0722" };
-    const updated = [...cases, c];
-    setCases(updated);
-    save("cases", updated);
-  }
-
-  // ---- CITATION ----
-  function addCitation() {
-    const c = "Citation #" + (citations.length + 1);
-    const updated = [...citations, c];
-    setCitations(updated);
-    save("citations", updated);
-  }
-
-  // ---- DISPATCH ----
-  function addDispatch() {
-    setDispatch([...dispatch, "Traffic Stop — Main St"]);
-  }
-
-  // ---- PLATE SCAN ----
-  function scanPlate() {
-    const plate = prompt("Enter plate:");
-    alert(plates[plate] || "No record");
-  }
-
-  // ---- SIREN ----
-  function siren() {
-    const audio = new Audio("https://actions.google.com/sounds/v1/alarms/siren.ogg");
-    audio.play();
-  }
-
-  // ---- EXPORT ----
-  function exportReport() {
-    const blob = new Blob([JSON.stringify(cases, null, 2)]);
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "cases.json";
-    a.click();
+  function toggle(section) {
+    setTreeOpen(prev => ({ ...prev, [section]: !prev[section] }));
   }
 
   return (
-    <div style={{
-      height: "100vh",
-      background: night ? "#000" : "#2a2a2a",
-      color: night ? "#0f0" : "white",
-      display: "flex",
-      flexDirection: "column"
-    }}>
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column", fontFamily: "Arial" }}>
 
       {/* TOP BAR */}
-      <div style={{ background: "#222", padding: 10 }}>
-        Athens RP MDT
-
-        <button onClick={() => setNight(!night)}>Night Mode</button>
-        <button onClick={siren}>Siren</button>
+      <div style={{ background: "#1a1a1a", padding: 10 }}>
+        Athens MDT Simulator
 
         <span
           style={{ float: "right", cursor: "pointer" }}
@@ -115,37 +62,73 @@ export default function Dashboard() {
 
       <div style={{ display: "flex", flex: 1 }}>
 
-        {/* SIDEBAR */}
-        <div style={{ width: 220, background: "#1c1c1c", padding: 10 }}>
-          <h4>MDT Menu</h4>
+        {/* TREE PANEL */}
+        <div style={{ width: 240, background: "#202020", padding: 10, color: "#ccc" }}>
 
-          <button onClick={newCase}>New Case</button>
-          <button onClick={addCitation}>Citation</button>
-          <button onClick={addDispatch}>Dispatch</button>
-          <button onClick={scanPlate}>Plate Scan</button>
-          <button onClick={exportReport}>Export</button>
+          <h4 onClick={() => toggle("admin")} style={{ cursor: "pointer" }}>
+            ▶ Admin
+          </h4>
+          {treeOpen.admin && (
+            <ul>
+              <li>Local Case</li>
+              <li>Summary</li>
+              <li>Officer Notes</li>
+            </ul>
+          )}
 
-          <h4>Officers</h4>
-          {officers.map(o => <div key={o}>{o}</div>)}
+          <h4 onClick={() => toggle("suspects")} style={{ cursor: "pointer" }}>
+            ▶ Suspects
+          </h4>
+          {treeOpen.suspects && (
+            <ul>
+              <li>{suspect.name}</li>
+            </ul>
+          )}
+
+          <h4 onClick={() => toggle("vehicles")} style={{ cursor: "pointer" }}>
+            ▶ Vehicles
+          </h4>
+          {treeOpen.vehicles && (
+            <ul>
+              <li>Plate Lookup</li>
+              <li>Impound</li>
+            </ul>
+          )}
+
+          <hr />
+          <div>Athens Map</div>
         </div>
 
-        {/* MAIN */}
-        <div style={{ flex: 1, padding: 15, display: "flex", gap: 15 }}>
+        {/* MAIN WORKSPACE */}
+        <div style={{ flex: 1, display: "flex", background: "#2b2b2b" }}>
 
-          <div style={{ width: 400 }}>
-            <h3>Cases</h3>
-            {cases.map(c => <div key={c.id}>{c.id}</div>)}
+          {/* INCIDENT PANEL */}
+          <div style={{ width: 450, padding: 15 }}>
 
-            <h3>Citations</h3>
-            {citations.map((c,i) => <div key={i}>{c}</div>)}
+            <h3>Active Suspect</h3>
 
-            <h3>Dispatch CAD</h3>
-            {dispatch.map((d,i) => <div key={i}>{d}</div>)}
+            <div style={{ background: "#ddd", padding: 10, color: "black" }}>
+              <b>Name:</b> {suspect.name}<br />
+              <b>Status:</b> <span style={{ color: "red" }}>{suspect.warrant}</span><br />
+              <b>Last Known Address:</b> {suspect.address}
+            </div>
 
-            <h3>Warrants</h3>
-            {warrants.map((w,i) => <div key={i}>{w}</div>)}
+            <h3>Incident Entry</h3>
+
+            <div style={{ background: "#ddd", padding: 10, color: "black" }}>
+              <label>Incident Type</label><br />
+              <input style={{ background: "yellow" }} /><br /><br />
+
+              <label>Location</label><br />
+              <input style={{ background: "yellow" }} /><br /><br />
+
+              <label>Officer</label><br />
+              <input style={{ background: "yellow" }} value="Milner 0722" readOnly />
+            </div>
+
           </div>
 
+          {/* MAP */}
           <div style={{ flex: 1 }}>
             <Map />
           </div>
